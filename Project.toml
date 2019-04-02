@@ -1,0 +1,10 @@
+name = "ValueHistoriesLogger"
+uuid = "1b1fca25-83d5-5bb0-90da-fe5c0189c84d"
+authors = ["Filippo Vicentini <filippovicentini@gmail.com>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
