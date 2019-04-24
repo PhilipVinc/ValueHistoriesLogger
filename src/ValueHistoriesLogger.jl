@@ -78,8 +78,6 @@ catch_exceptions(lg::MVLogger) = false
 
 function handle_message(lg::MVLogger, level, message, _module, group, id,
                         filepath, line; maxlog=nothing, kwargs...)
-	println("$message", "$kwargs")
-
     i_step = 1
     for (key, val) in pairs(kwargs)
         if key == :log_step_increment
