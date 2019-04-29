@@ -79,6 +79,7 @@ catch_exceptions(lg::MVLogger) = false
 function handle_message(lg::MVLogger, level, message, _module, group, id,
                         filepath, line; maxlog=nothing, kwargs...)
     i_step = 1
+	#=
     for (key, val) in pairs(kwargs)
         if key == :log_step_increment
             i_step = val
@@ -94,7 +95,48 @@ function handle_message(lg::MVLogger, level, message, _module, group, id,
 
         push!(lg.hist, Symbol(message, key), iter, deepcopy(val))
     end
+	=#
+	!isempty(message) ? message = message*"/" : message = message
+	# new
+	if !isempty(kwargs)
+		data = Vector{Pair{String,Any}}()
+
+		# ∀ (k-v) pairs, decompose values into objects that can be serialized
+		for (key,val) in pairs(kwargs)
+			# special key describing step increment
+			if key == :log_step_increment
+				i_step = val
+				continue
+			end
+
+			preprocess(message*"$key", val, data)
+		end
+		iter = increment_step(lg, i_step)
+
+		# Serialize every object
+		for (name,val) in data
+			push!(lg.hist, Symbol(name), iter, deepcopy(val))
+		end
+	end
 end
 
+function preprocess(name, val::T, data) where T
+    if isstructtype(T)
+        fn = fieldnames(T)
+        for f=fn
+            prop = getfield(val, f)
+            preprocess(name*"/$f", prop, data)
+        end
+	else
+		push!(data, name=>val)
+    end
+	data
+end
+
+function preprocess(name, val::Union{AbstractArray, Complex}, data)
+	push!(data, name=>val)
+end
+
+ValueHistories.getindex(h::MVHistory, s::String) = h[Symbol(s)]
 
 end # module
